@@ -1,7 +1,7 @@
-var Board
-const HumanP = '0'
-const AiP = 'X'
-const WinCombos = [
+var origBoard;
+const humanP = 'X';
+const aiP = 'O';
+const winCombos = [
 	[0, 1, 2],
 	[3, 4, 5],
 	[6, 7, 8],
@@ -9,28 +9,53 @@ const WinCombos = [
 	[1, 4, 7],
 	[2, 5, 8],
 	[0, 4, 8],
-	[2, 4, 6],
+	[2, 4, 6]
 ]
-const cells = document.querySelectorAll(".cell")
+const cells = document.querySelectorAll('.cell');
 
-StartGame()
+startGame();
 
-function StartGame(){
-	document.querySelector(".endgame").style.display = "none"
-	Board = Array.from(Array(9).keys())
-	for (var i = 0; i < cells.lenght; i++) {
-		cells[i].innerText = ''
-		cells[i].style.removeProperty('background-color')
-		cells[i].addEventListener("click", turnClick, false)
+function startGame() {
+	document.querySelector(".endgame").style.display = "none";
+	origBoard = Array.from(Array(9).keys());
+	for (var i = 0; i < cells.length; i++) {
+		cells[i].innerText = '';
+		cells[i].style.removeProperty('background-color');
+		cells[i].addEventListener("click", turnClick, false);
 	}
 }
 
-function turnClick(event) {
-	console.log(event.target.id)
-	turn(square.target.id, HumanP)
+function turnClick(square) {
+	turn(square.target.id, humanP);
 }
 
-function turn(squareId, Player) {
-	Board[squareId] = Player
-	document.getElementById(squareId).innerText = Player
+function turn(squareId, player) {
+	origBoard[squareId] = player;		//use?
+	document.getElementById(squareId).innerText = player;
+	let gameWon = checkWin(origBoard, player);
+	if (gameWon) {
+		gameOver(gameWon);
+	}
+}
+
+function checkWin(board, player) {
+	let plays = board.reduce((a, e, i) => (e === player) ? a.concat(i) : a, []);
+	let gameWon = null;
+	for (let [index, win] of winCombos.entries()) {
+		if (win.every(elem => plays.indexOf(elem) > -1)) {
+			gameWon = {index: index, player: player};
+			break;
+		}
+	}
+	return gameWon;
+}
+
+function gameOver(gameWon) {
+	for (let index of winCombos[gameWon.index]) {
+		document.getElementById(index).style.backgroundColor =
+			gameWon.player == humanP ? "blue" : "red";
+	}
+	for (var i = 0; i < cells.length; i++) {
+		cells[i].removeEventListener('click', turnClick, false);
+	}
 }
